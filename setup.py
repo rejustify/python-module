@@ -12,6 +12,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/rejustify/python-module",
+    download_url='https://github.com/rejustify/python-module/archive/1.0.1.tar.gz',
     packages=setuptools.find_packages(),
     keywords='rejustify, ETL, data, economics, time-series',
     install_requires=[
