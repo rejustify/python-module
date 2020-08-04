@@ -14,7 +14,7 @@ setuptools.setup(
     url="https://github.com/rejustify/python-module",
     download_url='https://github.com/rejustify/python-module/archive/1.0.1.tar.gz',
     packages=setuptools.find_packages(),
-    keywords='rejustify, ETL, data, economics, time-series',
+    keywords=['rejustify, ETL, data, economics, time-series'],
     install_requires=[
         'requests >= 2.18.4',
         'pandas >= 0.21',
