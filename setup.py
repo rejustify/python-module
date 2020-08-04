@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="rejustify",
-    version="1.1.1",
+    version="1.0.1",
     author="M. Wolski",
     author_email="marcin@rejustify.com",
     description="Support for Rejustify API",
@@ -18,6 +18,9 @@ setuptools.setup(
     install_requires=[
         'requests >= 2.18.4',
         'pandas >= 0.21',
+        'copy',
+        'os',
+        'json'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
