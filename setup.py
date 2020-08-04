@@ -13,8 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/rejustify/python-module",
     packages=setuptools.find_packages(),
-    # What does your project relate to?
-    keywords='rejustify ETL data economics time-series',
+    keywords='rejustify, ETL, data, economics, time-series',
     install_requires=[
         'requests >= 2.18.4',
         'pandas >= 0.21',
