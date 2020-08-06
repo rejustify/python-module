@@ -15,7 +15,24 @@ rejustify_email = os.environ.get('rejustify_email') or None
 
 def setCurl(main_url=None, proxy_url=None, proxy_port=None, learn=None):
     """
-    setCurl()
+
+    This command stores the connection details into memory to be easier accessed by rejustify Python module.
+
+    For more details and to register an account visit https://rejustify.com.
+
+    Examples:
+        rejustify.setCurl()
+        rejustify.setCurl(learn = False)
+        rejustify.setCurl(proxy_url = "PROXY_ADDRESS", proxy_port = 8080)
+
+    Attributes:
+        main_url(str): Main address for rejustify API calls. Default is set to
+            https://api.rejustify.com, but depending on the customer needs, the address
+            may change.
+        proxy_url(str): Address of the proxy server.
+        proxy_port(str): Port for communication with the proxy server.
+        learn(bool): Enable AI learning in all API calls by setting learn=True. You can also
+            specify the learn option in the relevant functions directly.
     """
 
     global rejustify_main_url, rejustify_proxy_url, rejustify_proxy_port, rejustify_learn
@@ -51,7 +68,11 @@ def setCurl(main_url=None, proxy_url=None, proxy_port=None, learn=None):
 
 def getCurl():
     """
-    getCurl()
+
+    This command summarizes the current curl settings.
+
+    Examples:
+        rejustify.getCurl()
     """
 
     print('Main API address: ' + rejustify_main_url)
@@ -62,7 +83,18 @@ def getCurl():
 
 def register(token=None, email=None):
     """
-    register()
+
+    This command stores the account details into memory to be easier accessed by
+    rejustify module. The email must correspond to the token that was assigned to it.
+
+    To register an account visit https://rejustify.com.
+
+    Examples:
+        register(token = "YOUR_TOKEN", email = "YOUR_EMAIL")
+
+    Attributes:
+        token(str): API token.
+        email(str): E-mail address for the account.
     """
 
     global rejustify_token, rejustify_email
@@ -90,7 +122,82 @@ def analyze(df=None, shape="vertical", inits=1, fast=True,
             sep=",", learn=None, token=None,
             email=None, url=None):
     """
-    analyze()
+
+    The function submits the data set to the analyze API endpoint and
+    returns the proposed structure of the data. At the current stage
+    data set must be rectangular, either vertical or horizontal.
+
+    API recognizes the multi-dimension and multi-line headers, however, for now the Python module supports
+    multi-dimension but single line headers. Make sure that the separator doesn't appear in the header values. Also only vertical
+    data shape is supported in Python.
+
+    The classification algorithms are applied to the values in the rows/columns if they are not empty, and
+    to the headers if the rows/columns are empty. For efficiency reasons only a sample of values in each column is analyzed.
+    To improve the classification accuracy, you can ask the API to draw a larger sample by setting fast=False.
+    For empty columns the API returns the proposed resources that appear to fit well in the empty spaces given the header
+    information and overall structure of df.
+
+    The basic properties are characterized by classes. Currently, the API distinguishes between 6 classes: general,
+    geography, unit, time, sector, number. They describe the basic characteristics of the
+    values, and they are further used to propose the best transformations and matching methods for data reconciliation. Classes
+    are further supported by features, which determine the characteristics in greater detail, such as class geography
+    may be further supported by feature country.
+
+    Cleaner contains the basic set of transformations applied to each value in a dimension to retrieve machine-readable
+    representation. For instance, values y1999, y2000, ..., clearly correspond to years, however, they will
+    be processed much faster if stripped from the initial 'y' character, such as '^y'. Cleaner allows basic regular expressions.
+
+    Finally, format corresponds to the format of the values, and it is particularly useful for time-series operations. Format allows
+    the standard date formats.
+
+    The classification algorithm can be substantially improved by allowing it to recall how
+    it was used in the past and how well it performed. Parameter learn controls this feature, however, by default it
+    is disabled. The information stored by rejustify is tailored to each user individually and it can substantially
+    increase the usability of the API. For instance, the proposed provider for empty row/column with header 'gross domestic product'
+    is IMF. Selecting another provider, for instance AMECO, will teach the algorithm that for this combination
+    of headers and rows/columns AMECO is the preferred provider, such that the next time API is called, there will be
+    higher chance of AMECO to be picked by default. To enable learning option in all API calls by default, run
+    setCurl(learn = True).
+
+    If learn=True, the information stored by rejustify include (i) the information changed by the user with respect
+    to assigned class, feature, cleaner and format, (ii) resources determined by provider,
+    table and headers of df, (iii) hand-picked matching values for value-selection. The information will
+    be stored only upon a change of values within groups (i-iii).
+
+    Examples:
+        # API setup
+        setCurl()
+
+        # register token/email
+        register(token = "YOUR_TOKEN", email = "YOUR_EMAIL")
+
+        # prepare sample data set
+        df = pd.DataFrame()
+        df['country'] = ['Italy'] * 4
+        df['date'] = pd.date_range('2020-06-01', periods=4).strftime("%Y-%m-%d")
+        df['covid cases'] = ""
+
+        # rejustify
+        analyze(df)
+
+    Attributes:
+        df(DataFrame): The data set to be analyzed. Must be a DataFrame.
+        shape(str): It informs the API whether the data set should be read by
+            columns (vertical) or by rows (horizontal). The current Python module support only vertical.
+        inits(int): It informs the API how many initial rows (or columns in horizontal data), correspond
+            to the header description. The default is inits=1.
+        fast(bool): Informs the API on how big a sample draw of original data should be. The larger
+            the sample, the more precise but overall slower the algorithm. Under the fast=True the API
+            samples 5% of data points, under the fast=False option it is 25%. Default is fast=True.
+        sep(str): The header can also be described by single field values, separated by a given character
+            separator, for instance 'GDP, Austria, 1999'. The option informs the API which separator should
+            be used to split the initial header string into corresponding dimensions. The default is sep=','.
+        learn(bool): It should be set as True if the user accepts rejustify to track her/his activity
+            to enhance the performance of the AI algorithms (it is not enabled by default). To change this option
+            for all API calls run setCurl(learn = True).
+        token(str): API token. By default read from global variables.
+        email(str): E-mail address for the account. By default read from global variables.
+        url(url): API url. By default read from global variables.
     """
 
     # error handling
@@ -178,7 +285,60 @@ def analyze(df=None, shape="vertical", inits=1, fast=True,
 
 def adjust(block=None, column=None, id=None, items=None):
     """
-    adjust()
+
+     The purpose of the command is to provide a possibly seamless
+     way of adjusting blocks used in communication with rejustify API, in particular with the
+     fill endpoint. The blocks include: data structure (structure), default values
+     (default) and matching keys (keys)). Items may only be deleted for specific matching
+     dimensions proposed by keys, for the two other blocks it is possible only to change the relevant
+     values.
+
+     Upon changes in structure, the corresponding p_class or p_data will be set to -1.
+     This is the way to inform API that the original structure has changed and, if learn
+     option is enabled, the new values will be used to train the algorithms in the back end. If learn
+     is disabled, information will not be stored by the API but the changes will be recognized in the current API call.
+
+     Examples:
+         # API setup
+         setCurl()
+
+         # register token/email
+         register(token = "YOUR_TOKEN", email = "YOUR_EMAIL")
+
+         # prepare sample data set
+         df = pd.DataFrame()
+         df['country'] = ['Italy'] * 4
+         df['date'] = pd.date_range('2020-06-01', periods=4).strftime("%Y-%m-%d")
+         df['covid cases'] = ""
+
+         # rejustify
+         st = analyze(df)
+
+         # adjust structures
+         st = adjust(st, id = 3, items={'class': 'general',
+                                        'feature': None,
+                                        'provider': 'REJUSTIFY',
+                                        'table': 'COVID-19-ECDC'})
+
+         # endpoint fill
+         rdf = fill(df, st)
+
+         # adjust default values
+         adjust(rdf['default'], column=3, items={'Time Dimension': 'latest'})
+
+         #adjust keys
+         adjust(rdf['keys'], column = 3, items={'id.x': 2, 'id.y': None}) # remove link
+         adjust(rdf['keys'], column = 3, items={'id.x': 2, 'id.y': 3}) # change link
+         adjust(rdf['keys'], column = 3, items={'id.x': 3, 'id.y': 4}) # add link
+
+     Attributes:
+        block(DataFrame, list or dict): A data structure to be changed. Currently supported structures include structure (DataFrame),
+            default (dict) and keys (list).
+        column(int or list): The data column (or raw in case of horizontal datasets) to be adjusted. Vector values are supported.
+        id(int or list): The identifier of the specific element to be changed. Currently it should be only used in structure
+            with multi-dimension headers (see analyze() for details).
+        items(dict): Specific items to be changed with the new values to be assigned. If the values are set to None,
+            the specific item will be removed from the block (only for keys). Items may be multi-valued.
     """
 
     # error handling
@@ -361,7 +521,82 @@ def fill(df=None, structure=None, keys=None, default=None,
          accu=0.75, form='full', token=None, email=None,
          url=None):
     """
-    fill()
+
+    This command submits the request to the API fill endpoint
+    to retrieve the desired extra data points. At the current stage
+    dataset must be rectangular, and structure should be in the shape proposed
+    analyze function. The minimum required by the endpoint is the data set and
+    the corresponding structure. You can browse the available resources at
+    https://rejustify.com/repos. Other features, including private
+    resources and models, are taken as defined for the account.
+
+    The API defines the submitted data set as x and any server-side data set as y.
+    The corresponding structures are marked with the same principle, as structure.x and
+    structure.y, for instance. The principle rule of any data manipulation is to never change
+    data x (except for missing values), but only adjust y.
+
+    Examples:
+        # API setup
+        setCurl()
+
+        # register token/email
+        register(token = "YOUR_TOKEN", email = "YOUR_EMAIL")
+
+        # prepare sample data set
+        df = pd.DataFrame()
+        df['country'] = ['Italy'] * 4
+        df['date'] = pd.date_range('2020-06-01', periods=4).strftime("%Y-%m-%d")
+        df['covid cases'] = ""
+
+        # rejustify
+        st = analyze(df)
+        rdf = fill(df, st)
+
+    Attributes:
+        df(DataFrame): The data set to be analyzed. Must be a DataFrame.
+        structure(DataFrame): Structure of the x data set, characterizing classes, features, cleaners and formats
+            of the columns/rows, and data provider/tables for empty columns. Perfectly, it should come from analyze
+            endpoint.
+        keys(list): The matching keys and matching methods between dimensions in x and y data sets. The elements in
+            keys are determined based on information provided in data x and y, for each empty column. The details
+            behind both data structures can be visualized by structure.x and structure.y.
+
+            Matching keys are given consecutively, i.e. the first element in id.x and name.x corresponds
+            to the first element in id.y and name.y, and so on. Dimension names are given for better readability of
+            the results, however, they are not necessary for API recognition. keys return also data classification in
+            element class and the proposed matching method for each part of id.x and id.y.
+
+            Currently, API suports 6 matching methods: synonym-proximity-matching, synonym-matching, proximity-matching, time-matching,
+            exact-matching and value-selection, which are given in a diminishing order of complexitiy. synonym-proximity-matching
+            uses the proximity between the values in data x and y to the coresponding values in rejustify dictionary. If the proximity
+            is above threshold accu and there are values in x and y pointing to the same element in the dictionary, the values will
+            be matched. synonym-matching and proximity-matching use similar logic of either of the steps described for
+            synonym-proximity-matching. time-matching aims at standardizing the time values to the same format before matching. For proper
+            functioning it requires an accurate characterization of date format in structure.x (structure.y is already classified by rejustify).
+            exact-matching will match two values only if they are identical. value-selection is a quasi matching method which for single-valued
+            dimension x will return single value from y, as suggested by default specification. It is the most efficient
+            matching method for dimensions which do not show any variability.
+        default(dict): Default values used to lock dimensions in data y which will be not used for matching against
+            data x. Each empty column to be filled, characterized by default['column.id.x'], must contain description of
+            the default values. If missing, the API will propose the default values in line with the history of how it was
+            used in the past.
+        shape(str): It informs the API whether the data set should be read by
+            columns (vertical) or by rows (horizontal). The current Python module support only vertical.
+        inits(int): It informs the API how many initial rows (or columns in horizontal data), correspond
+            to the header description. The default is inits=1.
+        sep(str): The header can also be described by single field values, separated by a given character
+            separator, for instance 'GDP, Austria, 1999'. The option informs the API which separator should
+            be used to split the initial header string into corresponding dimensions. The default is sep=','.
+        learn(bool): It should be set as True if the user accepts rejustify to track her/his activity
+            to enhance the performance of the AI algorithms (it is not enabled by default). To change this option
+            for all API calls run setCurl(learn = True).
+        accu(float): Acceptable accuracy level on a scale from 0 to 1. It is used in the matching algorithms
+            to determine string similarity. The default is accu=0.75.
+        form(str): Requests the data to be returned either in full, or partial shape. The former returns the original
+            data with filled empty columns. The latter returns only the filled columns.
+        token(str): API token. By default read from global variables.
+        email(str): E-mail address for the account. By default read from global variables.
+        url(url): API url. By default read from global variables.
     """
 
     # error handling
