@@ -17,13 +17,11 @@ setuptools.setup(
     keywords=['rejustify, ETL, data, economics, time-series'],
     install_requires=[
         'requests >= 2.18.4',
-        'pandas >= 0.21',
-        'copy',
-        'os',
-        'json'
+        'pandas >= 0.21'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
+        "Development Status :: 4 - Beta",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
     ],
